@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;800;900&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1200px; height: 630px;
+  background: #0C0F14;
+  font-family: 'Inter', sans-serif;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.glow {
+  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: rgba(0, 242, 96, 0.04);
+  border-radius: 50%; filter: blur(100px);
+}
+.content { position: relative; text-align: center; }
+.logo { height: 48px; margin-bottom: 40px; }
+h1 { font-size: 72px; font-weight: 900; color: white; line-height: 0.95; letter-spacing: -0.04em; margin-bottom: 12px; }
+h1 span { background: linear-gradient(to right, #00F260, #0AE87F); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+p { font-size: 24px; color: #8B9DB8; margin-top: 24px; }
+.badge { font-size: 13px; color: #00F260; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 800; margin-bottom: 32px; }
+.url { position: absolute; bottom: 32px; font-size: 16px; color: #4B5563; }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="content">
+  <div class="badge">The #1 Pickleball Event Tool</div>
+  <h1>Run Your Court<br><span>Like a Hero</span></h1>
+  <p>Create brackets. Live scoring. Instant leaderboards.</p>
+</div>
+<div class="url">courthero.app</div>
+</body>
+</html>

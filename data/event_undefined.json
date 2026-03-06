@@ -1,0 +1,7 @@
+{
+  "title": "Test Tournament",
+  "location": "Chicago",
+  "date": "2026-03-20",
+  "format": "double-elimination",
+  "maxPlayers": 16
+}

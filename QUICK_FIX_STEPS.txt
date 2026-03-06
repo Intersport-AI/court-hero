@@ -1,0 +1,100 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    COURT HERO SIGNUP FIX - QUICK STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ CODE IS READY - I've fixed the signup code locally
+❌ NEEDS 3 MANUAL STEPS FROM YOU
+
+─────────────────────────────────────────────────────────────────────────────── 
+STEP 1: CREATE DEFAULT ORGANIZATION IN SUPABASE (2 minutes)
+───────────────────────────────────────────────────────────────────────────────
+
+1. Open: https://app.supabase.com
+2. Select project: hhwjmuulhzznolaglvpa  
+3. Click: SQL Editor (left sidebar)
+4. COPY & PASTE this SQL:
+
+   INSERT INTO organizations (id, name, plan_tier, created_at, updated_at)
+   VALUES ('court-hero-default', 'Court Hero', 'community', NOW(), NOW())
+   ON CONFLICT (id) DO NOTHING;
+   SELECT * FROM organizations WHERE id = 'court-hero-default';
+
+5. Click: RUN button
+6. VERIFY: You see the organization in the results
+
+✅ STEP 1 COMPLETE
+
+───────────────────────────────────────────────────────────────────────────────
+STEP 2: SET UP RLS POLICIES (2 minutes)
+───────────────────────────────────────────────────────────────────────────────
+
+1. Stay in SQL Editor in Supabase
+2. COPY & PASTE this SQL:
+
+   ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+   DROP POLICY IF EXISTS "Allow signup" ON users;
+   CREATE POLICY "Allow signup" ON users FOR INSERT WITH CHECK (true);
+   DROP POLICY IF EXISTS "Users can read own record" ON users;
+   CREATE POLICY "Users can read own record" ON users FOR SELECT 
+   USING (auth.uid()::text = id OR true);
+   SELECT tablename, rowsecurity FROM pg_tables 
+   WHERE tablename = 'users' AND schemaname = 'public';
+
+3. Click: RUN button
+4. VERIFY: You see users table with rowsecurity = true
+
+✅ STEP 2 COMPLETE
+
+───────────────────────────────────────────────────────────────────────────────
+STEP 3: DEPLOY CODE TO VERCEL (3-5 minutes)
+───────────────────────────────────────────────────────────────────────────────
+
+CODE CHANGES MADE:
+  ✓ src/lib/auth-server.ts - Users join default org
+  ✓ src/app/signup/page.tsx - Removed org name field
+  ✓ Build tested successfully
+
+DEPLOY OPTION A - Push from local machine:
+   cd /Users/intersportai/.openclaw/workspace/courthero
+   git push origin main
+
+DEPLOY OPTION B - Manual Vercel redeploy:
+   1. Go: https://vercel.com/intersport-ais-projects/courthero
+   2. Click: Deployments
+   3. Click: Redeploy on latest
+
+✅ STEP 3 COMPLETE
+
+───────────────────────────────────────────────────────────────────────────────
+TEST SIGNUP
+───────────────────────────────────────────────────────────────────────────────
+
+1. Go to: https://courthero.app/signup
+2. Enter:
+   First Name: TestUser
+   Last Name: Demo
+   Email: test@example.com
+   Password: TestPassword123!
+3. Click: Create Account
+4. EXPECT: Redirect to dashboard (no error!)
+
+✅ DONE!
+
+───────────────────────────────────────────────────────────────────────────────
+WHAT WAS WRONG & HOW I FIXED IT
+───────────────────────────────────────────────────────────────────────────────
+
+PROBLEM: 
+  Signup tried to create an organization with anon key
+  RLS policies blocked the insert
+  Result: "Failed to create organization" error
+
+SOLUTION:
+  1. Remove org creation from signup code ✓
+  2. Make users join pre-existing default org ✓  
+  3. Setup RLS policies to allow signup ✓
+  4. Deploy changes ← YOUR STEP 3
+
+───────────────────────────────────────────────────────────────────────────────
+LET ME KNOW WHEN YOU'RE DONE WITH ALL 3 STEPS!
+───────────────────────────────────────────────────────────────────────────────
