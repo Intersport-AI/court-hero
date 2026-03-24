@@ -6,13 +6,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// GET /api/games/[gameId]/rsvp - List all RSVPs for a game
-export async function GET(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
+    const { gameId } = await params;
     const { data, error } = await supabase
       .from('game_rsvps')
       .select('*')
-      .eq('game_id', params.gameId);
+      .eq('game_id', gameId);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -30,9 +30,9 @@ export async function GET(req: NextRequest, { params }: { params: { gameId: stri
   }
 }
 
-// POST /api/games/[gameId]/rsvp - Create or update RSVP
-export async function POST(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
+    const { gameId } = await params;
     const body = await req.json();
     const { player_id, status } = body;
 
@@ -42,10 +42,10 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       }, { status: 400 });
     }
 
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing } = await supabase
       .from('game_rsvps')
       .select('id')
-      .eq('game_id', params.gameId)
+      .eq('game_id', gameId)
       .eq('player_id', player_id)
       .maybeSingle();
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       result = await supabase
         .from('game_rsvps')
         .update({ status, updated_at: new Date().toISOString() })
-        .eq('game_id', params.gameId)
+        .eq('game_id', gameId)
         .eq('player_id', player_id)
         .select();
     } else {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
         .from('game_rsvps')
         .insert([
           {
-            game_id: params.gameId,
+            game_id: gameId,
             player_id,
             status,
             payment_status: 'pending'

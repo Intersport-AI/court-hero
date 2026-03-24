@@ -71,29 +71,57 @@ export async function POST(req: NextRequest) {
     // Update leaderboard for winners
     const winningPlayers = winning_team === 'a' ? team_a_players : team_b_players;
     for (const playerId of winningPlayers) {
-      await supabase.rpc('increment_player_wins', {
-        p_club_id: club_id,
-        p_player_id: playerId
-      }).catch(() => {
-        // Fallback: manually update
-        supabase
+      // Get current record
+      const { data: currentData } = await supabase
+        .from('leaderboards')
+        .select('wins, losses')
+        .eq('club_id', club_id)
+        .eq('player_id', playerId)
+        .maybeSingle();
+      
+      if (currentData) {
+        // Update existing record
+        const newWins = (currentData.wins || 0) + 1;
+        const newLosses = currentData.losses || 0;
+        const newWinRate = (newWins / (newWins + newLosses)) * 100;
+        
+        await supabase
           .from('leaderboards')
-          .update({ wins: supabase.raw('wins + 1') })
+          .update({ 
+            wins: newWins,
+            win_rate: Math.round(newWinRate * 100) / 100
+          })
           .eq('club_id', club_id)
-          .eq('player_id', playerId)
-          .execute();
-      });
+          .eq('player_id', playerId);
+      }
     }
 
     // Update leaderboard for losers
     const losingPlayers = winning_team === 'a' ? team_b_players : team_a_players;
     for (const playerId of losingPlayers) {
-      await supabase
+      // Get current record
+      const { data: currentData } = await supabase
         .from('leaderboards')
-        .update({ losses: supabase.raw('losses + 1') })
+        .select('wins, losses')
         .eq('club_id', club_id)
         .eq('player_id', playerId)
-        .execute();
+        .maybeSingle();
+      
+      if (currentData) {
+        // Update existing record
+        const newWins = currentData.wins || 0;
+        const newLosses = (currentData.losses || 0) + 1;
+        const newWinRate = newWins > 0 ? (newWins / (newWins + newLosses)) * 100 : 0;
+        
+        await supabase
+          .from('leaderboards')
+          .update({ 
+            losses: newLosses,
+            win_rate: Math.round(newWinRate * 100) / 100
+          })
+          .eq('club_id', club_id)
+          .eq('player_id', playerId);
+      }
     }
 
     return NextResponse.json({ success: true }, { status: 201 });

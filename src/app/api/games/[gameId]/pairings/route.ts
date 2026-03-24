@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// POST /api/games/[gameId]/pairings - Generate fair skill-balanced team pairings
-export async function POST(req: NextRequest, { params }: { params: { gameId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ gameId: string }> }) {
   try {
+    const { gameId } = await params;
     const body = await req.json();
-    const { players } = body; // Array of { id, skill_level }
+    const { players } = body as { players: Array<{id: string, skill_level: string}> };
 
     if (!Array.isArray(players) || players.length < 4) {
       return NextResponse.json({ 
@@ -12,14 +12,12 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       }, { status: 400 });
     }
 
-    // Sort players by skill level
     const sorted = [...players].sort((a, b) => 
       parseFloat(b.skill_level) - parseFloat(a.skill_level)
     );
 
-    // Generate balanced teams using snake draft
-    const team_a = [];
-    const team_b = [];
+    const team_a: string[] = [];
+    const team_b: string[] = [];
     
     sorted.forEach((player, index) => {
       if (Math.floor(index / 2) % 2 === 0) {
@@ -37,7 +35,6 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
       }
     });
 
-    // Calculate average skill for verification
     const avgA = team_a.reduce((sum, pid) => {
       const p = players.find(pl => pl.id === pid);
       return sum + (p ? parseFloat(p.skill_level) : 0);
@@ -49,7 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: { gameId: str
     }, 0) / team_b.length;
 
     const skillDifference = Math.abs(avgA - avgB);
-    const balanced = skillDifference < 0.3; // Within 0.3 skill points
+    const balanced = skillDifference < 0.3;
 
     return NextResponse.json({
       pairings: {
