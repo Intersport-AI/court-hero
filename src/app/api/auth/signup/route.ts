@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { signUp } from '@/lib/auth-server';
-import { initializeDatabase } from '@/lib/db-init';
 
 export async function POST(request: NextRequest) {
   try {
